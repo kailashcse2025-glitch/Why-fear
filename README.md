@@ -1,5 +1,9 @@
 # Why-fear
 Main Workflow
+
+Do not forget to use your own gemini api key 
+
+
 Add Night Memory: Navigate to the "Add Memory/Schedule" screen and select "Night Memory." Enter any thoughts, worries, or items you quickly remembered before sleeping (e.g., "Must carry the new keys," "Need to check the oven," etc.).
 
 Add Tomorrow Task: On the same screen, select "Tomorrow's Schedule" and input your itinerary (e.g., "9 AM Meeting with Sarah," "Buy milk after work," "Gym at 6 PM").
