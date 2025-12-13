@@ -8,18 +8,13 @@ from tkinter import messagebox, scrolledtext
 import threading
 import re 
 
-# -------------------------
-#  CONFIGURE GEMINI API
-# -------------------------
-# WARNING: Replace with your actual key or use environment variables!
+
 GEMINI_API_KEY = "AIzaSyABuo0blEzLdPCRsKlxsLa2sMpPgQHFqfQ"
 genai.configure(api_key=GEMINI_API_KEY)
 
 model = genai.GenerativeModel("gemini-2.5-flash")
 
-# -------------------------
-#   AI THINKING FUNCTION (Synchronous for Threading)
-# -------------------------
+
 def analyze_forgetfulness_sync(memories, schedule):
     """Performs the synchronous AI call in a separate thread."""
     prompt = f"""
@@ -46,31 +41,29 @@ Keep it short but extremely helpful. Use **bold** text and emojis for a good sum
     except Exception as e:
         return f"AI Error: {e}"
 
-# -------------------------
-#   APPLICATION MANAGER AND STATE
-# -------------------------
+
 class SmartNightHelperApp(ctk.CTk):
     def __init__(self):
         super().__init__()
         
-        # --- Configure Main Window ---
+        
         self.title("🌙 Smarter Night Memory Helper")
         self.geometry("1000x650")
         
-        # Set appearance mode and color theme
-        ctk.set_appearance_mode("Dark")  # Options: "Light", "Dark", "System"
-        ctk.set_default_color_theme("blue") # Options: "blue", "green", "dark-blue"
+        
+        ctk.set_appearance_mode("Dark")  
+        ctk.set_default_color_theme("blue") 
 
-        # --- STATE ---
+        
         self.night_memory = []
         self.tomorrow_schedule = []
         self.forgotten_history = []
         
-        # Configure grid layout for the main window (1 row, 2 columns)
+       
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
         
-        # --- Navigation Sidebar ---
+        
         self.navigation_frame = ctk.CTkFrame(self, corner_radius=0)
         self.navigation_frame.grid(row=0, column=0, sticky="nsew")
         self.navigation_frame.grid_rowconfigure(7, weight=1)
@@ -78,7 +71,7 @@ class SmartNightHelperApp(ctk.CTk):
         ctk.CTkLabel(self.navigation_frame, text="Night Helper", compound="left",
                      font=ctk.CTkFont(size=15, weight="bold")).grid(row=0, column=0, padx=20, pady=20)
 
-        # Navigation Buttons
+       
         self.home_button = self.create_nav_button("Home", 1, self.home_event)
         self.add_memory_button = self.create_nav_button("Add Memory/Schedule", 2, self.add_memory_event)
         self.view_data_button = self.create_nav_button("View All Data", 3, self.view_data_event)
@@ -86,12 +79,12 @@ class SmartNightHelperApp(ctk.CTk):
         self.ai_analysis_button = self.create_nav_button("AI Analysis 🧠", 5, self.ai_analysis_event)
         self.clear_data_button = self.create_nav_button("Clear All Data", 6, self.clear_data_event)
         
-        # Exit Button
+        
         ctk.CTkButton(self.navigation_frame, text="Exit", fg_color="red", hover_color="#990000",
                       command=self.destroy).grid(row=8, column=0, padx=20, pady=20, sticky="s")
 
 
-        # --- Content Frames ---
+       
         self.home_frame = HomeScreen(self)
         self.input_frame = InputScreen(self)
         self.view_frame = ViewScreen(self)
@@ -106,11 +99,11 @@ class SmartNightHelperApp(ctk.CTk):
             "AI": self.ai_frame
         }
         
-        # Place frames in the content area
+        
         for name, frame in self.frames.items():
             frame.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
             
-        # Select the default frame
+       
         self.select_frame_by_name("Home")
 
     def create_nav_button(self, text, row, command):
@@ -140,21 +133,21 @@ class SmartNightHelperApp(ctk.CTk):
             
         frame.tkraise()
 
-    # --- Navigation Events ---
+    
     def home_event(self): self.select_frame_by_name("Home")
     def add_memory_event(self): self.select_frame_by_name("Input")
     def view_data_event(self): self.select_frame_by_name("View")
     def log_forgot_event(self): self.select_frame_by_name("Forgotten")
     def ai_analysis_event(self): self.select_frame_by_name("AI")
 
-    # --- Data Events ---
+  
     def clear_data_event(self):
         if messagebox.askyesno("Confirm Clear", "Are you sure you want to clear ALL stored data (Memory, Schedule, History)?"):
             self.night_memory.clear()
             self.tomorrow_schedule.clear()
             self.forgotten_history.clear()
             
-            # Refresh all affected screens
+            
             for frame in self.frames.values():
                 if hasattr(frame, 'refresh_content'):
                     frame.refresh_content()
@@ -170,17 +163,15 @@ class SmartNightHelperApp(ctk.CTk):
             self.tomorrow_schedule.append(value)
             messagebox.showinfo("Success", "Added to schedule!")
             
-        # Refresh all affected screens
+        
         for frame in self.frames.values():
             if hasattr(frame, 'refresh_content'):
                 frame.refresh_content()
         
-        self.select_frame_by_name("Home") # Return to home after action
+        self.select_frame_by_name("Home") 
 
 
-# -------------------------
-#   CONTENT SCREENS
-# -------------------------
+
 
 class HomeScreen(ctk.CTkFrame):
     def __init__(self, master):
@@ -195,17 +186,17 @@ class HomeScreen(ctk.CTkFrame):
         ctk.CTkLabel(self, text="Use the sidebar to manage your memories, schedule, and get AI predictions for forgetfulness.", 
                      font=ctk.CTkFont(size=14)).grid(row=1, column=0, pady=10)
         
-        # --- Quick Overview Panel ---
+        
         self.overview_frame = ctk.CTkFrame(self)
         self.overview_frame.grid(row=2, column=0, sticky="nsew", padx=20, pady=20)
         self.overview_frame.grid_columnconfigure((0, 1), weight=1)
         
-        # Memory Preview
+      
         ctk.CTkLabel(self.overview_frame, text="Night Memories (Last 3)", font=ctk.CTkFont(size=14, weight="bold")).grid(row=0, column=0, padx=10, pady=10)
         self.memory_preview = ctk.CTkLabel(self.overview_frame, text="", justify="left", wraplength=400)
         self.memory_preview.grid(row=1, column=0, padx=10, pady=5, sticky="nsw")
         
-        # Schedule Preview
+        
         ctk.CTkLabel(self.overview_frame, text="Tomorrow's Schedule (Last 3)", font=ctk.CTkFont(size=14, weight="bold")).grid(row=0, column=1, padx=10, pady=10)
         self.schedule_preview = ctk.CTkLabel(self.overview_frame, text="", justify="left", wraplength=400)
         self.schedule_preview.grid(row=1, column=1, padx=10, pady=5, sticky="nsw")
@@ -232,11 +223,11 @@ class InputScreen(ctk.CTkFrame):
         
         self.radio_var = tk.StringVar(value="memory")
         
-        # Radio Buttons for selection
+        
         ctk.CTkRadioButton(self, text="Night Memory", variable=self.radio_var, value="memory").grid(row=1, column=0, pady=5)
         ctk.CTkRadioButton(self, text="Tomorrow's Schedule", variable=self.radio_var, value="schedule").grid(row=2, column=0, pady=5)
         
-        # Input Field
+        
         ctk.CTkLabel(self, text="Enter Item/Task:", font=ctk.CTkFont(size=14)).grid(row=3, column=0, pady=(20, 5))
         self.input_entry = ctk.CTkEntry(self, width=400, height=35, font=ctk.CTkFont(size=14))
         self.input_entry.grid(row=4, column=0, pady=10)
@@ -269,7 +260,7 @@ class ViewScreen(ctk.CTkFrame):
         
         ctk.CTkLabel(self, text="Full Data View", font=ctk.CTkFont(size=24, weight="bold")).grid(row=0, column=0, columnspan=2, pady=20)
 
-        # Memory Panel
+      
         mem_frame = ctk.CTkFrame(self, fg_color="#1a1a1a")
         mem_frame.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
         mem_frame.grid_columnconfigure(0, weight=1)
@@ -277,7 +268,7 @@ class ViewScreen(ctk.CTkFrame):
         self.memory_view = scrolledtext.ScrolledText(mem_frame, width=35, height=25, bg="#1a1a1a", fg="#ffffff", wrap=tk.WORD, state=tk.DISABLED)
         self.memory_view.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 
-        # Schedule/History Panel
+     
         sch_frame = ctk.CTkFrame(self, fg_color="#1a1a1a")
         sch_frame.grid(row=1, column=1, sticky="nsew", padx=10, pady=10)
         sch_frame.grid_columnconfigure(0, weight=1)
@@ -287,11 +278,11 @@ class ViewScreen(ctk.CTkFrame):
         self.tab_view.add("Schedule")
         self.tab_view.add("Forgotten History")
         
-        # Schedule Tab
+       
         self.schedule_view = scrolledtext.ScrolledText(self.tab_view.tab("Schedule"), width=35, height=20, bg="#1a1a1a", fg="#ffffff", wrap=tk.WORD, state=tk.DISABLED)
         self.schedule_view.pack(padx=10, pady=10, fill="both", expand=True)
 
-        # History Tab
+     
         self.history_view = scrolledtext.ScrolledText(self.tab_view.tab("Forgotten History"), width=35, height=20, bg="#1a1a1a", fg="#DDA0DD", wrap=tk.WORD, state=tk.DISABLED)
         self.history_view.pack(padx=10, pady=10, fill="both", expand=True)
         
@@ -327,7 +318,7 @@ class ForgottenInputScreen(ctk.CTkFrame):
         
         ctk.CTkLabel(self, text="Log Forgotten Incident", font=ctk.CTkFont(size=24, weight="bold")).grid(row=0, column=0, pady=20)
         
-        # Input Frame
+       
         input_frame = ctk.CTkFrame(self)
         input_frame.grid(row=1, column=0, padx=20, pady=10, sticky="ew")
         input_frame.grid_columnconfigure(0, weight=1)
@@ -374,7 +365,7 @@ class AIAnalysisScreen(ctk.CTkFrame):
         
         ctk.CTkLabel(self, text="AI Prediction: What Will I Forget?", font=ctk.CTkFont(size=24, weight="bold"), text_color="#00FFFF").grid(row=0, column=0, pady=20)
 
-        # Data Preview
+      
         self.data_preview = scrolledtext.ScrolledText(self, width=80, height=8, bg="#1a1a1a", fg="#e0e0e0", state=tk.DISABLED, wrap=tk.WORD)
         self.data_preview.grid(row=1, column=0, padx=20, pady=10, sticky="ew")
         
@@ -382,10 +373,9 @@ class AIAnalysisScreen(ctk.CTkFrame):
                                         fg_color="#8A2BE2", hover_color="#6A5ACD", font=ctk.CTkFont(size=16, weight="bold"))
         self.ask_ai_btn.grid(row=2, column=0, pady=20)
         
-        # Result Area
         ctk.CTkLabel(self, text="AI Analysis Result:", font=ctk.CTkFont(size=14, weight="bold")).grid(row=3, column=0, pady=(5, 0), sticky="nw", padx=20)
         
-        # **HEIGHT CHANGED TO 80**
+      
         self.result_display = scrolledtext.ScrolledText(self, width=80, height=80, bg="#2a140d", fg="#ffffff", state=tk.DISABLED, wrap=tk.WORD)
         self.result_display.grid(row=4, column=0, padx=20, pady=(0, 20), sticky="nsew")
 
@@ -413,8 +403,7 @@ class AIAnalysisScreen(ctk.CTkFrame):
 
         self.ask_ai_btn.configure(state=tk.DISABLED, text="AI Thinking... ⏳")
         self.populate_textbox(self.result_display, "⏳ AI is analyzing your data... Please wait.")
-        
-        # Run the API call in a separate thread to prevent GUI freeze
+  
         threading.Thread(target=self.run_analysis_thread, daemon=True).start()
 
     def run_analysis_thread(self):
@@ -424,14 +413,12 @@ class AIAnalysisScreen(ctk.CTkFrame):
         
         result = analyze_forgetfulness_sync(joined_memory, joined_schedule)
         
-        # Use master.after to update the GUI thread safely
         self.master.after(0, self.display_analysis_result, result)
 
     def display_analysis_result(self, result):
         """Update the result display in the main GUI thread and clean markdown."""
         
-        # FIX: Clean Markdown Characters
-        # Remove ** and * for bold/italic formatting
+    
         cleaned_result = re.sub(r'\*\*', '', result)
         cleaned_result = re.sub(r'\*', '', cleaned_result)
         
@@ -439,9 +426,7 @@ class AIAnalysisScreen(ctk.CTkFrame):
         self.populate_textbox(self.result_display, cleaned_result)
 
 
-# -------------------------
-#   RUN PROGRAM
-# -------------------------
+
 if __name__ == "__main__":
     app = SmartNightHelperApp()
     app.mainloop()
